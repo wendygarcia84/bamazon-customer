@@ -1,5 +1,22 @@
 var inquirer = require("inquirer");
 var mysql = require("mysql");
+var colors = require('colors');
+
+   
+  // Using commonjs?
+  const {table} = require('table');
+   
+//   var data,
+//       output;
+   
+  
+//   data = [
+//       ['0A', '0B', '0C'],
+//       ['1A', '1B', '1C'],
+//       ['2A', '2B', '2C']
+//   ];
+
+
 
 var connection = mysql.createConnection({
     host     : 'localhost',
@@ -48,12 +65,14 @@ function viewProducts(data) {
 
 function viewLowInventory(data) {
     console.log("This will list all objects with inventory lower than 5");
+    var values = [["ID".bgWhite.black, "NAME".bgWhite.black, "QUANTITY".bgWhite.black]];
     //console.log(data);
     for(var obj of data) {
         if (obj.stock_quantity < 5)
-        console.log
-        (`Id: ${obj.product_id}     |   Item: ${obj.product_name}       |       Stock Quantity: ${obj.stock_quantity}`)
+        values.push([obj.product_id, obj.product_name, String(obj.stock_quantity).red.bold])
     }
+    output = table(values);
+    console.log(output);
     getStarted();
 }
 
@@ -130,3 +149,4 @@ function addNewProduct() {
     })
     
 }
+
