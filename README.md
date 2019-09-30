@@ -1,18 +1,19 @@
-# bamazon-customer
+# Bamazon app
 
-## Level 1
+## Customer Level
 
 The app will take in orders from customers and deplete stock from the store's inventory.
 
 * DATABASE: bamazon
 
-CREATE TABLE products (
+CREATE TABLE bamazon_products (
 	product_id INT (30) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     product_name VARCHAR (50),
     department_name VARCHAR (50),
     price FLOAT (30, 2),
     stock_quantity INT (30)
 );
+
 Populate this database with around 10 different products. (i.e. Insert "mock" data rows into this database and table).
 
 Then create a Node application called bamazonCustomer.js. 
@@ -64,3 +65,5 @@ Create a new Node application called bamazonManager.js. Running this application
 
 4. If a manager selects Add New Product, it should allow the manager to 
     - add a completely new product to the store.
+
+## Level 3

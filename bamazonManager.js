@@ -84,16 +84,28 @@ function addToInventory() {
             {
                 type: "input",
                 name: "id",
-                message: "Enter the id of the Item to update"
+                message: "Enter the id of the Item to update",
+                //CHECK THIS FUNCTION OR DELETE
+                validate: function(value) {
+                    if (isNaN(value) === false) {
+                      return true;
+                    }
+                    return false;
+                  }
             }, {
                 type: "input",
                 name: "quantity",
                 message: "Type quantity to add: "
             }
         ]).then(function (user) {
+            //CHECK THIS BLOCK OR DELETE!
+            // if (!user.ID) {
+            //     console.log("Please select a valid ID number.");
+            //     getStarted();
+            // }
             connection.query('SELECT * FROM bamazon_products WHERE ?',
             {
-                product_id: user.id
+                product_id: user.id 
             }, function (error, results) {
                 if (error) throw error;
 
