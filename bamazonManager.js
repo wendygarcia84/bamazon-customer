@@ -2,21 +2,7 @@ var inquirer = require("inquirer");
 var mysql = require("mysql");
 var colors = require('colors');
 
-   
-  // Using commonjs?
-  const {table} = require('table');
-   
-//   var data,
-//       output;
-   
-  
-//   data = [
-//       ['0A', '0B', '0C'],
-//       ['1A', '1B', '1C'],
-//       ['2A', '2B', '2C']
-//   ];
-
-
+const {table} = require('table');
 
 var connection = mysql.createConnection({
     host     : 'localhost',
@@ -37,6 +23,7 @@ var connection = mysql.createConnection({
         inquirer.prompt([
             {
                 type: "list",
+                message: "Please select your option from the list below: ",
                 name: "option",
                 choices: ["View Products for Sale", "View Low Inventory", "Add to Inventory", "Add New Product", "EXIT"]
             }
@@ -46,7 +33,7 @@ var connection = mysql.createConnection({
             if (user.option === 'View Low Inventory') 
               viewLowInventory(res);
             if (user.option === "Add to Inventory")
-              addToInventory();
+              addToInventory(res);
             if(user.option === "Add New Product")
               addNewProduct();
             if (user.option === "EXIT")
@@ -58,13 +45,13 @@ var connection = mysql.createConnection({
   //=================//
 
 function viewProducts(data) {
-    console.log("THIS WILL LIST ALL PRODUCTS");
+    //console.log("THIS WILL LIST ALL PRODUCTS");
     console.table(data);
     getStarted();
 }
 
 function viewLowInventory(data) {
-    console.log("This will list all objects with inventory lower than 5");
+    //console.log("This will list all objects with inventory lower than 5");
     var values = [["ID".bgWhite.black, "NAME".bgWhite.black, "QUANTITY".bgWhite.black]];
     //console.log(data);
     for(var obj of data) {
@@ -76,16 +63,15 @@ function viewLowInventory(data) {
     getStarted();
 }
 
-function addToInventory() {
+function addToInventory(data) {
     //new query
     
-        console.log("This will add more products to the inventory");
+        //console.log("This will add more products to the inventory");
         inquirer.prompt([
             {
                 type: "input",
                 name: "id",
                 message: "Enter the id of the Item to update",
-                //CHECK THIS FUNCTION OR DELETE
                 validate: function(value) {
                     if (isNaN(value) === false) {
                       return true;
@@ -98,36 +84,41 @@ function addToInventory() {
                 message: "Type quantity to add: "
             }
         ]).then(function (user) {
-            //CHECK THIS BLOCK OR DELETE!
-            // if (!user.ID) {
-            //     console.log("Please select a valid ID number.");
-            //     getStarted();
-            // }
-            connection.query('SELECT * FROM bamazon_products WHERE ?',
-            {
-                product_id: user.id 
-            }, function (error, results) {
-                if (error) throw error;
-
-                var newQuantity = parseInt(results[0].stock_quantity) + parseInt(user.quantity);
-
-                connection.query('UPDATE bamazon_products SET ? WHERE ?',
-                [{
-                    stock_quantity: newQuantity
-                },
-                {
-                    product_id: user.id
-                }], function(err, res) {
-                    if (err) throw err;
-                    console.log("Product updated.");
-                    getStarted();
-                })
-        })
+            for(var i = 0; i < data.length; i++) {
+                if(parseInt(data[i].product_id) === parseInt(user.id)) {
+                    makeUpdate(user.id, user.quantity);
+                    return;
+                }
+            }
+            console.log("The product doesn't exist, please enter a valid ID.".bold.red);
+            getStarted();
         })
 }
 
+function makeUpdate(userId, userQuantity) {
+    connection.query('SELECT * FROM bamazon_products WHERE ?',
+    {
+        product_id: userId 
+    }, function (error, results) {
+        if (error) throw error;
+
+        var newQuantity = parseInt(results[0].stock_quantity) + parseInt(userQuantity);
+
+        connection.query('UPDATE bamazon_products SET ? WHERE ?',
+        [{
+            stock_quantity: newQuantity
+        },
+        {
+            product_id: userId
+        }], function(err, res) {
+            if (err) throw err;
+            console.log("Product updated.".bgBlue.bold.white);
+            getStarted();
+        })
+    })
+}
 function addNewProduct() {
-    console.log("This will add a new product");
+    //console.log("This will add a new product");
     inquirer.prompt([
         {
             type: "input",
@@ -151,10 +142,11 @@ function addNewProduct() {
             product_name: user.product_name,
             department_name: user.department_name,
             price: user.price,
-            stock_quantity: user.stock_quantity
+            stock_quantity: user.stock_quantity,
+            product_sales: 0
         }, function(err, res) {
             if (err) throw err;
-            console.log(res.affectedRows + " product inserted!\n");
+            console.log(res.affectedRows + " product inserted!\n".bgBlue.bold.white);
             getStarted();
         })
         

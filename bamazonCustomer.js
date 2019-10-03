@@ -1,6 +1,7 @@
 // Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
 var mysql      = require('mysql');
 var inquirer = require("inquirer");
+var colors = require('colors');
 
 var connection = mysql.createConnection({
   host     : 'localhost',
@@ -16,7 +17,7 @@ connection.connect(function (err) {
 });
 
 function getStarted() {
-    connection.query('SELECT product_id, product_name, price, stock_quantity FROM bamazon_products', function (error, results) {
+    connection.query('SELECT product_id, product_name, price, stock_quantity, product_sales FROM bamazon_products', function (error, results) {
         if (error) throw error;
         console.table(results);
       
@@ -44,7 +45,7 @@ function getStarted() {
                 return;
             }
         }
-        console.log("The product doesn't exist, please enter a valid ID.");
+        console.log("The product doesn't exist, please enter a valid ID.".bold.red);
         getStarted();
         
     })
@@ -58,17 +59,19 @@ function makePurchase(id, quantity) {
         }, function(err, res) {
             if (err) throw err;
             if (res[0].stock_quantity < quantity) {
-                console.log("Not enough products");
+                console.log("Not enough products".bold.yellow);
                 getStarted();
             } else {
                 var newQuantity = res[0].stock_quantity - quantity;
-                updateProduct(id, newQuantity);
-                console.log("Your total is $", (quantity*res[0].price).toFixed(2));
+                var total = (quantity*res[0].price).toFixed(2);
+                console.log("Your total is $".bold.bgWhite.blue, total);
+                var sales = res[0].product_sales + total;
+                updateProduct(id, newQuantity, sales);
             }
         })
 }
 
-function updateProduct(id, quantity) {
+function updateProduct(id, quantity, total_sales) {
     connection.query('UPDATE bamazon_products SET ? WHERE ?', 
     [{
         stock_quantity: quantity
@@ -77,7 +80,21 @@ function updateProduct(id, quantity) {
         product_id: id
     }], function(err, res) {
         if (err) throw err;
-        console.log("Purchase was succesful! Product updated.");
+        console.log("stock updated")
         getStarted();
-    })
+    });
+    //THIS PART WAS WORKING THIS EVENING AND THEN IT STOPPED WORKING FOR NO REASON!
+
+
+    // connection.query('UPDATE bamazon_products SET ? WHERE ?', 
+    // [{
+    //     product_sales: total_sales
+    // },
+    // {
+    //     product_id: id
+    // }], function(err, res) {
+    //     if (err) throw err;
+    //     console.log("Purchase was succesful! Product updated.".bold.bgBlue.white);
+    //     getStarted();
+    // });
 }
